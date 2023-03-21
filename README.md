@@ -4,9 +4,11 @@
 
 <br>
 
-### Server 1
+#### Create a project directory for each edge endpoint and install *m2m*.
 
-#### 1. Create a device project directory and install *m2m*.
+<br>
+
+### Server 1
 
 ```js
 $ npm install m2m
@@ -172,12 +174,13 @@ ec1.on('error', (err) => {
 
 ```
 
-#### 3. Start the client application.
+<br>
 
-```js
-$ node client.js
-```
-You should get a similar result as shown below.
+#### Start the application on each endpoint.
+
+<br>
+
+You should get a client output similar to the result as shown below.
 ```js
 test-data { server: 1, topic: 'test-data', value: 27 }
 test-data { server: 2, topic: 'test-data', value: 25 }
