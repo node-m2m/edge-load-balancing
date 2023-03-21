@@ -328,8 +328,8 @@
       </g>
       <g class="TextShape">
        <g id="id39">
-        <rect class="BoundingBox" stroke="none" fill="none" x="9626" y="7594" width="3862" height="941"/>
-        <text class="SVGTextShape"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="494px" font-weight="400"><tspan class="TextPosition" x="9876" y="8168"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">Load Balancer</tspan></tspan></tspan></text>
+        <rect class="BoundingBox" stroke="none" fill="none" x="9626" y="7594" width="3862" height="1917"/>
+        <text class="SVGTextShape"><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="494px" font-weight="400"><tspan class="TextPosition" x="9876" y="8168"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">Load Balancer</tspan></tspan></tspan><tspan class="TextParagraph" font-family="Liberation Sans, sans-serif" font-size="494px" font-weight="400"><tspan class="TextPosition" x="9876" y="8723"><tspan fill="rgb(0,0,0)" stroke="none" style="white-space: pre">port  </tspan><tspan font-weight="700" fill="rgb(0,0,0)" stroke="none" style="white-space: pre">8133</tspan></tspan></tspan></text>
        </g>
       </g>
       <g class="TextShape">
