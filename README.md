@@ -182,7 +182,6 @@ let edge = new m2m.Edge()
  * tcp edge client 1
  */
 user.connect(() => {
-
   let ec1 = new edge.client(8133)
 
   setInterval(() => {
@@ -194,9 +193,7 @@ user.connect(() => {
   ec1.on('error', (err) => { 
       console.log('error:', err.message)
   })
-
 })
-
 ```
 
 <br>
