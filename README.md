@@ -122,8 +122,9 @@ let user = new m2m.User({name:'Load Balancer'})
 
 let edge = new m2m.Edge()
 
-user.connect(() => {
+user.connect(app)
 
+function app(){
   /***
    * tcp edge clients
    */
@@ -166,7 +167,7 @@ user.connect(() => {
           console.log('connected client', count)
       })
   })
-})
+}
 ```
 
 ### Client
