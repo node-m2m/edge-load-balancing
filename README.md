@@ -5,15 +5,10 @@
 <br>
 
 #### Create a project directory for each edge endpoint and install *m2m*.
-
-<br>
-
-### Server 1
-
 ```js
 $ npm install m2m
 ```
-
+### Server 1
 ```js
 const m2m = require('m2m')
 
@@ -22,18 +17,14 @@ function dataSource(){
   return 20 + Math.floor(Math.random() * 10)
 }
 
-let user = new m2m.User({name:'server1'})
-
 /***
  * tcp edge server 1
  */
-let edge = new m2m.Edge() 
-    
+let edge = new m2m.Edge({name:'server1'})
 let port = 8134
 
-user.connect(() => {
+m2m.connect(() => {
   edge.createServer(port, (server) => {
-      console.log('tcp server:', port)
 
       server.dataSource('test-data', (tcp) => {
           tcp.send({server:1, topic:tcp.topic, value:dataSource()})         
@@ -56,18 +47,14 @@ function dataSource(){
   return 20 + Math.floor(Math.random() * 10)
 }
 
-let user = new m2m.User({name:'server2'})
-
 /***
  * tcp edge server 2
  */
-let edge = new m2m.Edge()
-    
+let edge = new m2m.Edge({name:'server2'})
 let port = 8135
 
-user.connect(() => {
+m2m.connect(() => {
   edge.createServer(port, (server) => {
-      console.log('tcp server:', port)
 
       server.dataSource('test-data', (tcp) => {
           tcp.send({server:2, topic:tcp.topic, value:dataSource()})             
@@ -90,18 +77,14 @@ function dataSource(){
   return 20 + Math.floor(Math.random() * 10)
 }
 
-let user = new m2m.User({name:'server3'})
-
 /***
  * tcp edge server 3
  */
-let edge = new m2m.Edge()
-
+let edge = new m2m.Edge({name:'server3'})
 let port = 8136
 
-user.connect(() => {
+m2m.connect(() => {
   edge.createServer(port, (server) => {
-      console.log('tcp server:', port)
 
       server.dataSource('test-data', (tcp) => {
           tcp.send({server:3, topic:tcp.topic, value:dataSource()})       
@@ -118,11 +101,9 @@ user.connect(() => {
 ```js
 const m2m = require('m2m')
 
-let user = new m2m.User({name:'Load Balancer'})
+let edge = new m2m.Edger({name:'Load Balancer'})
 
-let edge = new m2m.Edge()
-
-user.connect(app)
+m2m.connect(app)
 
 function app(){
   /***
@@ -140,7 +121,6 @@ function app(){
   let load = 1 
 
   edge.createServer(port, (server) => {
-      console.log('tcp edge loadbalancer:', port)
 
       server.dataSource('test-data', (tcp) => { 
           if(load === 1){
@@ -174,26 +154,42 @@ function app(){
 ```js
 const m2m = require('m2m')
 
-let user = new m2m.User({name:'client1'})
-
-let edge = new m2m.Edge()
+let edge = new m2m.Edge({name:'client1'})
 
 /***
  * tcp edge client 1
  */
-user.connect(() => {
+
+let main = async () => {
+  let result = await device.connect();
+  console.log(result);
+
   let ec1 = new edge.client(8133)
 
-  setInterval(() => {
+  setInterval(async () => {
+
       ec1.read('test-data', (data) => {
           console.log('test-data', data)
       })
+
+      // or
+
+      let result = await  ec1.read('test-data')
+      console.log('test-data', result)
+
+      // or
+
+      ec1.read('test-data')
+      .then(console.log)
+
   }, 6000)
 
   ec1.on('error', (err) => { 
       console.log('error:', err.message)
   })
-})
+}
+
+main()
 ```
 
 <br>
