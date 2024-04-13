@@ -168,19 +168,19 @@ let main = async () => {
 
   setInterval(async () => {
 
-      ec1.read('test-data', (data) => {
-          console.log('test-data', data)
-      })
+      //ec1.read('test-data', (data) => {
+      //    console.log(data)
+      //})
 
       // or
 
       let result = await  ec1.read('test-data')
-      console.log('test-data', result)
+      console.log(result)
 
       // or
 
-      ec1.read('test-data')
-      .then(console.log)
+      //ec1.read('test-data')
+      //.then(console.log)
 
   }, 6000)
 
@@ -200,9 +200,10 @@ main()
 
 You should get a client output similar to the result as shown below.
 ```js
-test-data { server: 1, topic: 'test-data', value: 27 }
-test-data { server: 2, topic: 'test-data', value: 25 }
-test-data { server: 3, topic: 'test-data', value: 22 }
+{ server: 1, topic: 'test-data', value: 27 }
+{ server: 2, topic: 'test-data', value: 25 }
+{ server: 3, topic: 'test-data', value: 22 }
+...
 
 
 ```
