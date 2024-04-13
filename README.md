@@ -101,7 +101,7 @@ m2m.connect(() => {
 ```js
 const m2m = require('m2m')
 
-let edge = new m2m.Edger({name:'Load Balancer'})
+let edge = new m2m.Edge({name:'Load Balancer'})
 
 m2m.connect(app)
 
@@ -161,7 +161,7 @@ let edge = new m2m.Edge({name:'client1'})
  */
 
 let main = async () => {
-  let result = await device.connect();
+  let result = await m2m.connect();
   console.log(result);
 
   let ec1 = new edge.client(8133)
