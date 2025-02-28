@@ -1,6 +1,6 @@
 
-## Edge Load Balancing
-![](assets/edge-loadbalancer.svg)
+## Edge Load Balancer
+![](assets/edge-loadbalancer.png)
 
 <br>
 
@@ -12,87 +12,91 @@ $ npm install m2m
 ```js
 const m2m = require('m2m')
 
+/***
+ * tcp edge server 1
+ */
+let edge = new m2m.Edge({name:'server1'})
+
 // simulated data source
 function dataSource(){
   return 20 + Math.floor(Math.random() * 10)
 }
 
-/***
- * tcp edge server 1
- */
-let edge = new m2m.Edge({name:'server1'})
-let port = 8134
-
 m2m.connect(() => {
+
+  let port = 8144
+
   edge.createServer(port, (server) => {
 
-      server.dataSource('test-data', (tcp) => {
-          tcp.send({server:1, topic:tcp.topic, value:dataSource()})         
-      })
+    server.on('error', (error) => { 
+      console.log('error:', error)
+    })
 
-      server.on('error', (err) => { 
-          console.log('error:', err.message)
-      })
+    server.dataSource('test-data', (tcp) => {
+      tcp.send({server:1, topic:tcp.topic, value:dataSource()})         
+    })
   })
 })
-
 ```
 
 ### Server 2
 ```js
 const m2m = require('m2m')
 
+/***
+ * tcp edge server 2
+ */
+let edge = new m2m.Edge({name:'server2'})
+
 // simulated data source
 function dataSource(){
   return 20 + Math.floor(Math.random() * 10)
 }
 
-/***
- * tcp edge server 2
- */
-let edge = new m2m.Edge({name:'server2'})
-let port = 8135
-
 m2m.connect(() => {
+
+  let port = 8145
+
   edge.createServer(port, (server) => {
 
-      server.dataSource('test-data', (tcp) => {
-          tcp.send({server:2, topic:tcp.topic, value:dataSource()})             
-      })
+    server.on('error', (error) => { 
+      console.log('error:', error)
+    })
 
-      server.on('error', (err) => { 
-          console.log('error:', err.message)
-      })
+    server.dataSource('test-data', (tcp) => {
+      tcp.send({server:2, topic:tcp.topic, value:dataSource()})             
+    })
   })
 })
-
 ```
 
 ### Server 3
 ```js
 const m2m = require('m2m')
 
+/***
+ * tcp edge server 3
+ */
+let edge = new m2m.Edge({name:'server3'})
+
 // simulated data source
 function dataSource(){
   return 20 + Math.floor(Math.random() * 10)
 }
 
-/***
- * tcp edge server 3
- */
-let edge = new m2m.Edge({name:'server3'})
-let port = 8136
-
 m2m.connect(() => {
+
+  let port = 8146
+
   edge.createServer(port, (server) => {
 
-      server.dataSource('test-data', (tcp) => {
-          tcp.send({server:3, topic:tcp.topic, value:dataSource()})       
-      })
+    server.on('error', (error) => { 
+      console.log('error:', error)
+    })
 
-      server.on('error', (err) => { 
-          console.log('error:', err.message)
-      })
+    server.dataSource('test-data', (tcp) => {
+      tcp.send({server:3, topic:tcp.topic, value:dataSource()})       
+    })
   })
 })
 ```
@@ -103,93 +107,88 @@ const m2m = require('m2m')
 
 let edge = new m2m.Edge({name:'Load Balancer'})
 
-m2m.connect(app)
+m2m.connect(() => {
 
-function app(){
   /***
    * tcp edge clients
    */
-  let ec1 = new edge.client(8134)
-  let ec2 = new edge.client(8135)
-  let ec3 = new edge.client(8136)
+  let ec1 = new edge.client(8144)
+  let ec2 = new edge.client(8145)
+  let ec3 = new edge.client(8146)
 
   /***
    * tcp edge loadbalancer
    */
-  let port = 8133
-
-  let load = 1 
+  let port = 8143, data = null, load = 1  
 
   edge.createServer(port, (server) => {
 
-      server.dataSource('test-data', (tcp) => { 
-          if(load === 1){
-            load = 2;
-            ec1.read(tcp.topic, (data) => {
-              tcp.send(data)  
-            })   
-          }
-          else if(load === 2){
-            load = 3;
-            ec2.read(tcp.topic, (data) => {
-              tcp.send(data)  
-            })   
-          }
-          else if(load === 3){
-            load = 1;
-            ec3.read(tcp.topic, (data) => {
-              tcp.send(data)  
-            })  
-          }
-      })
+    server.on('connection', (count) => { 
+      console.log('connected client', count)
+    })
 
-      server.on('connection', (count) => { 
-          console.log('connected client', count)
-      })
+    server.dataSource('test-data', async (tcp) => { 
+      if(load === 1){
+				data = await ec1.read(tcp.topic)
+        load = 2
+      }
+      else if(load === 2){
+				data = await ec2.read(tcp.topic)
+  			load = 3
+      }
+      else if(load === 3){
+        data = await ec3.read(tcp.topic)
+        load = 1
+      }
+			tcp.send(data) 
+      console.log(data)
+    })
   })
-}
+})
 ```
 
 ### Client
 ```js
 const m2m = require('m2m')
 
-let edge = new m2m.Edge({name:'client1'})
+let edge = new m2m.Edge({name:'client'})
 
 /***
- * tcp edge client 1
+ * tcp edge client
  */
 
-let main = async () => {
-  let result = await m2m.connect();
-  console.log(result);
+async function main (){
 
-  let ec1 = new edge.client(8133)
+  await m2m.connect();
+
+  let ec = new edge.client(8143)
+
+  ec.on('ready', (result) => { 
+    console.log('ready:', result)
+  })
+
+  ec.on('error', (error) => { 
+    console.log('error:', error)
+  })
 
   setInterval(async () => {
 
-      //ec1.read('test-data', (data) => {
-      //    console.log(data)
-      //})
+    // async/await
+    let result = await  ec.read('test-data')
+    console.log(result)
 
-      // or
-
-      let result = await  ec1.read('test-data')
-      console.log(result)
-
-      // or
-
-      //ec1.read('test-data')
-      //.then(console.log)
-
+    // using callback
+    /*ec.read('test-data', (data) => {
+      console.log(data)
+    })*/
+		
+    // using promise 
+		/*ec.read('test-data')
+    .catch(console.log)
+    .then(console.log)*/
+		
   }, 6000)
-
-  ec1.on('error', (err) => { 
-      console.log('error:', err.message)
-  })
 }
-
-main()
 ```
 
 <br>
