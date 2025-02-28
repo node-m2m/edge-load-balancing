@@ -3,6 +3,12 @@
 ![](assets/edge-loadbalancer.png)
 
 <br>
+In this example, the client will monitor the data 'test-data' topic from an edge load balancer server. 
+The load balancer will fetch the data from 3 sources (server1, server2, and server3) one at a time using a simple round robin method.   
+It will then send the fetched data one at a time to the client or to every connected clients. 
+
+
+If one of the load balancer 3 sources of data goes down due to some unexpected events, it will continue to provide the data from the other sources.    
 
 #### Create a project directory for each edge endpoint and install *m2m*.
 ```js
@@ -25,7 +31,7 @@ m2m.connect(() => {
 
   let port = 8144
 
-  edge.createServer(port, (server) => {
+  edge.createServer(port, '127.0.0.1', (server) => {
 
     server.on('error', (error) => { 
       console.log('error:', error)
@@ -54,7 +60,7 @@ m2m.connect(() => {
 
   let port = 8145
 
-  edge.createServer(port, (server) => {
+  edge.createServer(port, '127.0.0.1', (server) => {
 
     server.on('error', (error) => { 
       console.log('error:', error)
@@ -83,7 +89,7 @@ m2m.connect(() => {
 
   let port = 8146
 
-  edge.createServer(port, (server) => {
+  edge.createServer(port, '127.0.0.1', (server) => {
 
     server.on('error', (error) => { 
       console.log('error:', error)
@@ -105,33 +111,32 @@ let edge = new m2m.Edge({name:'Load Balancer'})
 
 m2m.connect(() => {
 
-  let ec1 = new edge.client(8144)
-  let ec2 = new edge.client(8145)
-  let ec3 = new edge.client(8146)
+  let ec1 = new edge.client(8144, '127.0.0.1')
+  let ec2 = new edge.client(8145, '127.0.0.1')
+  let ec3 = new edge.client(8146, '127.0.0.1')
 
-  let port = 8143, data = null, load = 1  
+  let port = 8143, data = null, round = 1  
 
-  edge.createServer(port, (server) => {
+  edge.createServer(port, '127.0.0.1', (server) => {
 
     server.on('connection', (count) => { 
       console.log('connected client', count)
     })
 
-    server.dataSource('test-data', async (tcp) => {
-      if(load === 1){
+    server.publish('test-data', async (tcp) => {
+      if(round === 1){
+        round = 2
         data = await ec1.read(tcp.topic)
-        load = 2
       }
-      else if(load === 2){
+      else if(round === 2){
+        round = 3
         data = await ec2.read(tcp.topic)
-        load = 3
       }
-      else if(load === 3){
+      else if(round === 3){
+        round = 1
         data = await ec3.read(tcp.topic)
-        load = 1
       }
       tcp.send(data)
-      console.log(data)
     })
   })
 })
@@ -148,7 +153,7 @@ async function main (){
 
   await m2m.connect();
 
-  let ec = new edge.client(8143)
+  let ec = new edge.client(8143, '127.0.0.1')
 
   ec.on('ready', (result) => { 
     console.log('ready:', result)
@@ -158,25 +163,9 @@ async function main (){
     console.log('error:', error)
   })
 
-  setInterval(async () => {
-
-    // async/await api
-    let data = await  ec.read('test-data')
+  ec.subscribe('test-data', (data) => {
     console.log(data)
-
-    /*
-    // using callback api
-    ec.read('test-data', (data) => {
-      console.log(data)
-    })
-		
-    // using promise api
-    ec.read('test-data')
-    .catch(console.log)
-    .then(console.log)
-    */
-		
-  }, 6000)
+  })
 }
 ```
 
@@ -191,6 +180,7 @@ $ node app.js
 
 You should get a client output similar to the result as shown below.
 ```js
+ready: true
 { server: 1, topic: 'test-data', value: 27 }
 { server: 2, topic: 'test-data', value: 25 }
 { server: 3, topic: 'test-data', value: 22 }
