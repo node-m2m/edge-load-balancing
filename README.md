@@ -9,12 +9,11 @@
 $ npm install m2m
 ```
 ### Server 1
+#### Save the code below as *app.js* in your server1 project directory.
+
 ```js
 const m2m = require('m2m')
 
-/***
- * tcp edge server 1
- */
 let edge = new m2m.Edge({name:'server1'})
 
 // simulated data source
@@ -38,14 +37,12 @@ m2m.connect(() => {
   })
 })
 ```
-
 ### Server 2
+#### Save the code below as *app.js* in your server2 project directory.
+
 ```js
 const m2m = require('m2m')
 
-/***
- * tcp edge server 2
- */
 let edge = new m2m.Edge({name:'server2'})
 
 // simulated data source
@@ -69,14 +66,12 @@ m2m.connect(() => {
   })
 })
 ```
-
 ### Server 3
+
+#### Save the code below as *app.js* in your server3 project directory.
 ```js
 const m2m = require('m2m')
 
-/***
- * tcp edge server 3
- */
 let edge = new m2m.Edge({name:'server3'})
 
 // simulated data source
@@ -100,8 +95,9 @@ m2m.connect(() => {
   })
 })
 ```
-
 ### Load Balancer
+
+#### Save the code below as *app.js* in your load balancer project directory.
 ```js
 const m2m = require('m2m')
 
@@ -109,16 +105,10 @@ let edge = new m2m.Edge({name:'Load Balancer'})
 
 m2m.connect(() => {
 
-  /***
-   * tcp edge clients
-   */
   let ec1 = new edge.client(8144)
   let ec2 = new edge.client(8145)
   let ec3 = new edge.client(8146)
 
-  /***
-   * tcp edge loadbalancer
-   */
   let port = 8143, data = null, load = 1  
 
   edge.createServer(port, (server) => {
@@ -127,35 +117,32 @@ m2m.connect(() => {
       console.log('connected client', count)
     })
 
-    server.dataSource('test-data', async (tcp) => { 
+    server.dataSource('test-data', async (tcp) => {
       if(load === 1){
-				data = await ec1.read(tcp.topic)
+        data = await ec1.read(tcp.topic)
         load = 2
       }
       else if(load === 2){
-				data = await ec2.read(tcp.topic)
-  			load = 3
+        data = await ec2.read(tcp.topic)
+        load = 3
       }
       else if(load === 3){
         data = await ec3.read(tcp.topic)
         load = 1
       }
-			tcp.send(data) 
+      tcp.send(data)
       console.log(data)
     })
   })
 })
 ```
-
 ### Client
+
+#### Save the code below as *app.js* in your client project directory.
 ```js
 const m2m = require('m2m')
 
 let edge = new m2m.Edge({name:'client'})
-
-/***
- * tcp edge client
- */
 
 async function main (){
 
@@ -173,19 +160,21 @@ async function main (){
 
   setInterval(async () => {
 
-    // async/await
-    let result = await  ec.read('test-data')
-    console.log(result)
+    // async/await api
+    let data = await  ec.read('test-data')
+    console.log(data)
 
-    // using callback
-    /*ec.read('test-data', (data) => {
+    /*
+    // using callback api
+    ec.read('test-data', (data) => {
       console.log(data)
-    })*/
+    })
 		
-    // using promise 
-		/*ec.read('test-data')
+    // using promise api
+    ec.read('test-data')
     .catch(console.log)
-    .then(console.log)*/
+    .then(console.log)
+    */
 		
   }, 6000)
 }
@@ -194,6 +183,9 @@ async function main (){
 <br>
 
 #### Start the application on each endpoint.
+```js
+$ node app.js
+```
 
 <br>
 
